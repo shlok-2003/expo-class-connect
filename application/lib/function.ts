@@ -35,7 +35,7 @@ export const disconnectSocket = (
         Toast.show({
             type: "error",
             text1: "Socket closed",
-        })
+        });
     }
 };
 
@@ -100,3 +100,61 @@ export const sendStudentDataToFlask = (
             });
     }
 };
+
+export const fetchteacherData = async (lectureId: string) => {
+    const lectureData = {
+        lecture_id: lectureId,
+    };
+
+    //'https://flask-servers-gqazghgmg7hnbsgv.centralindia-01.azurewebsites.net/report_data'
+    //'http://127.0.0.1:3001/report_data'
+    const result = await fetch(
+        "https://round-robin-d0b9f9dhbzcdbrgn.centralindia-01.azurewebsites.net/round_robin",
+        {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+                type: "report",
+                data: lectureData,
+            }),
+        },
+    )
+        .then((response) => response.json())
+        .catch((error) => {
+            console.error("Error fetching student data:", error);
+            throw error;
+        });
+
+    return result.dataToReturn.students;
+};
+
+export const signInStudent = async (UID: string, roll_no: number, name: string) => {
+    const URL = "https://flask-servers-gqazghgmg7hnbsgv.centralindia-01.azurewebsites.net/student_data"
+    await fetch 
+    (
+        URL,
+        {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+                students: [
+                    {
+                        UID: UID,
+                        roll_no: roll_no,
+                        name: name,
+                    },
+                ]
+            })
+        }
+    ).then(res => {
+        if(res.ok) {
+            console.log("Student signed in successfully on azure");
+        }
+    }).catch(err => {
+        console.log("Error signing in student on azure", err);
+    })
+}

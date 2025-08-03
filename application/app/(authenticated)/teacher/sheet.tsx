@@ -1,125 +1,128 @@
-import { useState, useMemo } from "react";
-import { View, Text, FlatList, TouchableOpacity } from "react-native";
+import { useEffect, useState } from "react";
+import {
+    View,
+    Text,
+    FlatList,
+    KeyboardAvoidingView,
+    Platform,
+} from "react-native";
+
+import { useLocalSearchParams } from "expo-router";
 
 import { cn } from "@/lib/utils";
+import { fetchteacherData } from "@/lib/function";
 
-const months = [
-    "January",
-    "February",
-    "March",
-    "April",
-    "May",
-    "June",
-    "July",
-    "August",
-    "September",
-    "October",
-    "November",
-    "December",
-] as const;
-
-const attendance = [
-    { rollNo: 1, name: "John Doe", attendance: 1 },
-    { rollNo: 2, name: "Jane Doe", attendance: 0 },
-    { rollNo: 3, name: "John Smith", attendance: 1 },
-    { rollNo: 4, name: "Jane Smith", attendance: 0 },
-    { rollNo: 5, name: "John Doe", attendance: 1 },
-];
+interface Attendance {
+    roll_no: number;
+    name: string;
+}
 
 export default function Sheet() {
-    const [activeMonth, setActiveMonth] = useState<(typeof months)[number]>(
-        months[0],
-    );
+    const {lectureId} = useLocalSearchParams<{ lectureId: string }>();
 
-    //TODO: in the setResult we need to calculate the percentage of attendance in the format 30/40
+    // const [lectureId, setLectureId] = useState<string>("");
+    const [data, setData] = useState<Attendance[]>([]);
 
-    const listHeaderComponent = useMemo(() => {
+    useEffect(() => {
+        const fetch = async () => {
+            try {
+                const response = await fetchteacherData(lectureId);
+                console.log("Response:", response);
+                setData(response);
+            } catch (error) {
+                console.error("Error fetching data:", error);
+            }
+        };
+
+        fetch();
+    }, [lectureId])
+
+    if(!lectureId) {
         return (
-            <View className="items-center justify-center gap-2 pt-[6px]">
-                <Text className="text-2xl">Attendance</Text>
+            <View className="flex-1 items-center justify-center">
+                <Text className="text-lg font-bold text-black">
+                    Lecture ID not found
+                </Text>
+            </View>
+        );
+    }
 
-                <FlatList
-                    data={months}
-                    keyExtractor={(item) => item}
-                    horizontal
-                    showsHorizontalScrollIndicator={false}
-                    contentContainerStyle={{
-                        gap: 5,
-                        paddingHorizontal: 10,
-                        paddingVertical: 5,
-                    }}
-                    renderItem={({ item }) => (
+    console.log("Lecture ID:", lectureId);
+    console.log("Data:", data);
+
+    return (
+        <KeyboardAvoidingView
+            behavior={Platform.OS === "ios" ? "padding" : undefined}
+            style={{ flex: 1 }}
+        >
+            <View className="flex-1">
+                <View className="flex flex-col justify-between gap-2">
+                    {/* <View className="mx-2 mb-5 mt-2 flex-row items-center justify-between gap-2 px-4">
+                        <TextInput
+                            className="flex-1 rounded-lg bg-white px-4 py-2 text-base font-bold text-black"
+                            placeholder="Enter Lecture ID"
+                            placeholderTextColor="#000000"
+                            value={lectureId}
+                            onChangeText={setLectureId}
+                        />
+
                         <TouchableOpacity
-                            className={cn(
-                                "rounded-lg border border-black px-2 py-1",
-                                activeMonth === item && "bg-c-purple",
-                            )}
-                            onPress={() => setActiveMonth(item)}
+                            className="rounded-lg bg-blue-500 px-4 py-2 text-base font-bold text-white"
                             activeOpacity={0.8}
+                            onPress={fetch}
                         >
-                            <Text
-                                className={cn(
-                                    "text-center text-lg font-bold",
-                                    activeMonth === item && "text-white",
-                                )}
-                            >
-                                {item}
+                            <Text className="text-base font-bold text-white">
+                                Fetch
                             </Text>
                         </TouchableOpacity>
-                    )}
-                />
+                    </View> */}
 
-                <View className="flex flex-col justify-between gap-2">
-                    <View className="flex flex-row justify-between gap-2">
-                        
+                    <View className="h-10 w-full flex-row items-center justify-between gap-2 bg-c-purple px-4">
+                        <Text className="text-left text-lg font-medium text-white">
+                            Roll No
+                        </Text>
+                        <Text className="flex-1 text-center text-lg font-medium text-white">
+                            Student Name
+                        </Text>
+                        <Text className="text-right text-lg font-medium text-white">
+                            Attendance
+                        </Text>
                     </View>
                 </View>
 
-                <View className="h-10 w-full flex-row items-center justify-between gap-2 bg-c-purple px-4">
-                    <Text className="text-left text-lg font-medium text-white">
-                        Subject
-                    </Text>
-                    <Text className="flex-1 text-center text-lg font-medium text-white">
-                        Teacher
-                    </Text>
-                    <Text className="text-right text-lg font-medium text-white">
-                        Theory / Prac
-                    </Text>
-                </View>
-            </View>
-        );
-    }, [activeMonth]);
-
-    return (
-        <FlatList
-            data={attendance}
-            keyExtractor={(item) => item.rollNo.toString()}
-            ItemSeparatorComponent={() => <View className="h-px bg-black" />}
-            renderItem={({ item }) => (
-                <View
-                    className={cn(
-                        "mx-2 my-1 flex-row items-center justify-between rounded-lg px-4 py-2",
-                        item.attendance === 1 ? "bg-green-500" : "bg-red-600",
+                <FlatList
+                    data={data}
+                    keyExtractor={(item) => item.roll_no.toString()}
+                    keyboardShouldPersistTaps="handled" // 👈 Important
+                    ItemSeparatorComponent={() => (
+                        <View className="h-px bg-black" />
                     )}
-                >
-                    <Text
-                        className="text-left text-base font-bold text-white"
-                        style={{ width: 45 }}
-                    >
-                        {item.rollNo}
-                    </Text>
-                    <Text className="flex-1 text-center text-base font-bold text-white">
-                        {item.name}
-                    </Text>
-                    <Text
-                        className="text-center text-base font-bold text-white"
-                        style={{ width: 45 }}
-                    >
-                        {item.attendance === 1 ? "P" : "A"}
-                    </Text>
-                </View>
-            )}
-            ListHeaderComponent={listHeaderComponent}
-        />
+                    renderItem={({ item }) => (
+                        <View
+                            className={cn(
+                                "mx-2 my-1 flex-row items-center justify-between rounded-lg px-4 py-2",
+                                "bg-green-500",
+                            )}
+                        >
+                            <Text
+                                className="text-left text-base font-bold text-white"
+                                style={{ width: 45 }}
+                            >
+                                {item.roll_no}
+                            </Text>
+                            <Text className="flex-1 text-center text-base font-bold text-white">
+                                {item.name}
+                            </Text>
+                            <Text
+                                className="text-center text-base font-bold text-white"
+                                style={{ width: 45 }}
+                            >
+                                P
+                            </Text>
+                        </View>
+                    )}
+                />
+            </View>
+        </KeyboardAvoidingView>
     );
 }

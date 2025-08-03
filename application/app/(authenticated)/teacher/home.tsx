@@ -1,7 +1,9 @@
 import { useState } from "react";
 import { View, Text, ScrollView, TouchableOpacity, Alert } from "react-native";
 
+import { router } from "expo-router";
 import * as Location from "expo-location";
+import Toast from "react-native-toast-message";
 import { FontAwesome } from "@expo/vector-icons";
 import { Picker } from "@react-native-picker/picker";
 
@@ -14,7 +16,6 @@ import { useUserStore } from "@/stores/user-store";
 
 import { classes } from "@/data/class";
 import { subjects } from "@/data/subjects";
-import Toast from "react-native-toast-message";
 
 export default function Home() {
     const { user } = useUserStore();
@@ -24,6 +25,8 @@ export default function Home() {
     const [isJoining, setIsJoining] = useState(false);
     const [isConnecting, setIsConnecting] = useState(false);
     const [connected, setConnected] = useState(false);
+
+    const [lectureId, setLectureId] = useState<string>("");
 
     const getLocation = async () => {
         try {
@@ -65,6 +68,14 @@ export default function Home() {
                 lec_name: subject,
                 pass_year: "2025",
             };
+
+            const start_year = (Number(teacherData.pass_year) - 4).toString().slice(-2);
+            const end_year = teacherData.pass_year.slice(-2);
+
+            const lectureId = `${start_year}-${teacherData.branch}${teacherData.division}${teacherData.t_id}${teacherData.lec_name}-${end_year}`;
+            setLectureId(lectureId);
+
+            console.log("Lecture ID", lectureId);
 
             console.log("Teacher data", teacherData);
 
@@ -217,7 +228,15 @@ export default function Home() {
                             isJoining && "opacity-50",
                         )}
                         style={{ elevation: 10 }}
-                        onPress={() => socket && disconnectSocket(socket, setSocket)}
+                        onPress={() => {
+                            if(socket)
+                                disconnectSocket(socket, setSocket)
+
+                            router.push({
+                                pathname: "/(authenticated)/teacher/sheet",
+                                params: { lectureId },
+                            })
+                        }}
                         disabled={isJoining}
                         activeOpacity={0.8}
                     >

@@ -38,6 +38,7 @@ export default function Layout() {
                 name="sheet"
                 options={{
                     title: "Attendance Sheet",
+                    href: null,
                     tabBarIcon: ({ color }) => (
                         <Ionicons
                             key="sheet"

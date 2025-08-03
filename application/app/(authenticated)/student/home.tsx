@@ -206,7 +206,7 @@ export default function Home() {
                     type: "info",
                     text1: serverMessage.message,
                 });
-                
+
                 if (serverMessage.message === "Attendance Started") {
                     setShowJoin(true);
                     setTeacherLocation(serverMessage.teacherLocation);
@@ -228,7 +228,10 @@ export default function Home() {
             };
         } catch (error) {
             console.error(error);
-            Alert.alert("Error", (error as Error).message || "Failed to connect to server");
+            Alert.alert(
+                "Error",
+                (error as Error).message || "Failed to connect to server",
+            );
         } finally {
             setIsConnecting(false);
         }

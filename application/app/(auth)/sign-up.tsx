@@ -14,7 +14,8 @@ import { Ionicons } from "@expo/vector-icons";
 import Toast from "react-native-toast-message";
 import { SafeAreaView } from "react-native-safe-area-context";
 
-import { cn } from "@/lib/utils";
+import { signInStudent } from '@/lib/function'
+import { cn, parseUID } from "@/lib/utils";
 import { paths } from "@/lib/path";
 
 interface FormData {
@@ -56,6 +57,9 @@ export default function SignUp() {
             return;
         }
 
+        const match = parseUID(formData.id);
+        console.log("Parsed UID:", match);
+
         if (formData.password !== formData.confirmPassword) {
             Toast.show({
                 type: "error",
@@ -84,6 +88,8 @@ export default function SignUp() {
             const data = await response.json();
 
             if (response.ok) {
+
+                await signInStudent(formData.id, match.rollNumber, formData.fullName);
                 setFormData({
                     fullName: "",
                     email: "",

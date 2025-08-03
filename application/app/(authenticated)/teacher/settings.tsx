@@ -1,9 +1,9 @@
 import { Text, View, TouchableOpacity } from "react-native";
 
-import { router } from 'expo-router';
+import { router } from "expo-router";
 
-import { useUserStore } from '@/stores/user-store';
-import { paths } from '@/lib/path';
+import { useUserStore } from "@/stores/user-store";
+import { paths } from "@/lib/path";
 
 export default function Setting() {
     const { logout } = useUserStore();
